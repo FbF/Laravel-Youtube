@@ -42,14 +42,15 @@ After getting an access token (see section on Authentication below), to upload a
 
     $youtubeVideoId = Youtube::upload($data);
 
-where `$data` is in the format of Input::all() when submitting a form like the one in `views/example.blade.php`
+where `$data` is in the format of `Input::all()` when submitting a form like the one in `src/views/example.blade.php`.
 
-See the example in Route::post('youtube-upload-example', function() {...}) in the `src/routes.php` file
+See the example in `Route::post('youtube-upload-example', function() {...})` in the `src/routes.php` file.
 
 ## Authentication
 
-The config several settings, all except the access_token are required in order to get the access_token. To get the
-values for these settings, you need to register your app with the <a href="https://cloud.google.com/console">Google Developers Console</a>
+The config file contains several settings, all except the access_token are required in order to get the access_token.
+To get the values for these settings, you need to register your app with the
+<a href="https://cloud.google.com/console">Google Developers Console</a>.
 
 Create a project, give it a name and an ID, but to be honest, it doesn't really matter what these are as no one else
 will ever see them.
@@ -63,7 +64,7 @@ the absolute URL, including the domain, e.g. "http://mydomain.com/youtube-upload
 including localhost doesn't work, however you can still do all this on your local development machine, you just need to
 alias a real domain in your VirtualHost config and add it to your hosts file.
 
-Now copy the client ID and client secret into the `app/config/packages/fbf/laravel-youtube/config.php` file
+Now copy the client ID and client secret into the `app/config/packages/fbf/laravel-youtube/config.php` file.
 
 Finally, visit "http://mydomain.com/youtube-upload-example" in your browser, you should be redirected to
 "http://mydomain.com/youtube-upload-example/get-access-token". Click "Connect Me" and then approve the app. You should
@@ -72,6 +73,9 @@ token.
 
 Copy the full access token JSON string into the `'access_token'` key in the
 `app/config/packages/fbf/laravel-youtube/config.php` file and then click the try upload button.
+
+The `access_token` string includes a `refresh_token` if the `'access_type'` is set to `'offline'` in the config file.
+This means that the actual `access_token` will be automatically exchanged for a new one, of it has expired.
 
 ## Todo
 
