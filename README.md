@@ -14,6 +14,9 @@ without you having to authorise them each time.
 Also included is sample code for a form and a simple route closure callback that validates the form and uploads the
 video to Youtube.
 
+All the sample routes do not get included when in production. They only work on local, staging etc. Your production code
+should only ever call the methods in the Usage section below.
+
 ## Installation
 
 Add the following to you composer.json file
@@ -70,6 +73,9 @@ Finally, visit "http://mydomain.com/youtube-upload-example" in your browser, you
 "http://mydomain.com/youtube-upload-example/get-access-token". Click "Connect Me" and then approve the app. You should
 then be redirected back to http://mydomain.com/youtube-upload-example/oauth2-callback" which should display your access
 token.
+
+Ensure that the Google Account you sign in with already has a YouTube Channel. If you have created a new Google Account
+just for your project, you don't get a YouTube channel automatically, this is an extra step.
 
 Copy the full access token JSON string into the `'access_token'` key in the
 `app/config/packages/fbf/laravel-youtube/config.php` file and then click the try upload button.
