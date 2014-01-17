@@ -77,8 +77,15 @@ token.
 Ensure that the Google Account you sign in with already has a YouTube Channel. If you have created a new Google Account
 just for your project, you don't get a YouTube channel automatically, this is an extra step.
 
-Copy the full access token JSON string into the `'access_token'` key in the
-`app/config/packages/fbf/laravel-youtube/config.php` file and then click the try upload button.
+Copy the full JSON string into the `'access_token'` key in the
+`app/config/packages/fbf/laravel-youtube/config.php` file and then click the try upload button. Confusingly Google call
+both the `'access_token'` field in the JSON object and the full JSON object, including the refresh_token, bearer,
+expires fields etc, an Access Token. The client library deals with both of them interchangeably too. The difference is
+that if you use the full JSON string, including the refresh token, the Google library should automatically get a new
+access_token using the refresh_token, when this access_token expires, so your app should work for more than 1 hour!!!
+
+To confirm, copy the full JSON string into the config file's key labelled `'access_token'`. E.g.
+`'access_token' => '{"access_token":"ab12.1.ABCdE_FGhIjklMnOpQRsTuvWxYzAB1cdEFGH2aslfhjkljha_3KG£76g2HJGhg3ukKFSXGd","token_type":"Bearer","expires_in":3598,"created":1389173725}',`
 
 The `access_token` string includes a `refresh_token` if the `'access_type'` is set to `'offline'` in the config file.
 This means that the actual `access_token` will be automatically exchanged for a new one, of it has expired.
