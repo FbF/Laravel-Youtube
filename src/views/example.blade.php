@@ -12,7 +12,7 @@
 @if (isset($authUrl))
 	<a href="{{ $authUrl }}">Connect me</a>
 @elseif (isset($accessToken))
-	Add the access_token to your laravel-youtube::config file: <b>{{ $accessToken }}</b> then <a href="/youtube-upload-example">try an upload</a>
+	The access token has been added to your database: <b>{{ $accessToken }}</b> now <a href="/youtube-upload-example">try an upload</a>
 @else
 	{{ Form::open(array('url' => 'youtube-upload-example', 'class' => 'form', 'files' => true)) }}
 

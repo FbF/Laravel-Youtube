@@ -37,9 +37,4 @@ return array(
 	 */
 	'approval_prompt' => 'auto',
 
-	/**
-	 * Access token
-	 */
-	'access_token' => '',
-
 );

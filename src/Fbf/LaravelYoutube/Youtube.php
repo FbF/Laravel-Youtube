@@ -29,8 +29,9 @@ class Youtube {
 		$this->client->setScopes(\Config::get('laravel-youtube::scopes'));
 		$this->client->setAccessType(\Config::get('laravel-youtube::access_type'));
 		$this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube::redirect_uri')));
+		$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
 		$this->youtube = new \Google_Service_YouTube($this->client);
-		$accessToken = \Config::get('laravel-youtube::access_token');
+		$accessToken = $this->getLatestAccessTokenFromDB();
 		if ($accessToken)
 		{
 			$this->client->setAccessToken($accessToken);
@@ -38,8 +39,36 @@ class Youtube {
 	}
 
 	/**
-	 * Uploads the passed video to the YouTube account identified by the access token in the config file and returns the
-	 * uploaded video's YouTube Video ID.
+	 * Saves the access token to the database.
+	 * @param $accessToken
+	 */
+	public function saveAccessTokenToDB($accessToken)
+	{
+		\DB::table('fbf_youtube_access_token')->insert(array(
+			'access_token' => $accessToken,
+			'created_at' => \Carbon\Carbon::now(),
+		));
+	}
+
+	/**
+	 * Returns the last saved access token, if there is one, or null
+	 * @return mixed
+	 */
+	public function getLatestAccessTokenFromDB()
+	{
+		$latest = \DB::table('fbf_youtube_access_token')
+			->orderBy('created_at', 'desc')
+			->first();
+		if ($latest)
+		{
+			return $latest->access_token;
+		}
+		return null;
+	}
+
+	/**
+	 * Uploads the passed video to the YouTube account identified by the access token in the DB and returns the
+	 * uploaded video's YouTube Video ID. Attempts to automatically refresh the token if it's expired.
 	 *
 	 * @param array $data As is returned from \Input::all() given a form as per the one in views/example.blade.php
 	 * @return string The ID of the uploaded video
@@ -47,6 +76,23 @@ class Youtube {
 	 */
 	public function upload(array $data)
 	{
+		$accessToken = $this->client->getAccessToken();
+
+		if (is_null($accessToken))
+		{
+			throw new \Exception('You need an access token to upload');
+		}
+
+		// Attempt to refresh the access token if it's expired and save the new one in the database
+		if ($this->client->isAccessTokenExpired())
+		{
+			$accessToken = json_decode($accessToken);
+			$refreshToken = $accessToken->refresh_token;
+			$this->client->refreshToken($refreshToken);
+			$newAccessToken = $this->client->getAccessToken();
+			$this->saveAccessTokenToDB($newAccessToken);
+		}
+
 		$snippet = new \Google_Service_YouTube_VideoSnippet();
 		if (array_key_exists('title', $data))
 		{

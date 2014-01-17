@@ -14,11 +14,12 @@ if (App::environment() != 'production')
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', '$_GET[code] not set');
 		}
 		$accessToken = Youtube::authenticate($_GET['code']);
+		Youtube::saveAccessTokenToDB($accessToken);
 		return View::make('laravel-youtube::example')->with(compact('accessToken'));
 	});
 
 	Route::get('youtube-upload-example', function() {
-		if (!Config::get('laravel-youtube::access_token'))
+		if (!Youtube::getLatestAccessTokenFromDB())
 		{
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', 'Need to get an access token first');
 		}
