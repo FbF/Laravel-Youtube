@@ -9,11 +9,11 @@ if (App::environment() != 'production')
 	});
 
 	Route::get('youtube-upload-example/oauth2-callback', function() {
-		if (!isset($_GET['code']))
+		if (!isset(Input::get('code')))
 		{
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', '$_GET[code] not set');
 		}
-		$accessToken = Youtube::authenticate($_GET['code']);
+		$accessToken = Youtube::authenticate(Input::get('code'));
 		Youtube::saveAccessTokenToDB($accessToken);
 		return View::make('laravel-youtube::example')->with(compact('accessToken'));
 	});
