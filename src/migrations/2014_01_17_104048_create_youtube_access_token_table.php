@@ -15,6 +15,9 @@ class CreateYoutubeAccessTokenTable extends Migration {
 		Schema::create(\Config::get('laravel-youtube::table_name'), function(Blueprint $table)
 		{
 			$table->increments('id');
+			if(\Config::get('laravel-youtube::auth') == true){
+				$table->integer('user_id');
+			}
 			$table->text('access_token');
 			$table->timestamp('created_at');
 		});
