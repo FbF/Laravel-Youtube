@@ -26,6 +26,14 @@ if (App::environment() != 'production')
 		return View::make('laravel-youtube::example');
 	});
 
+	Route::get('youtube-upload-example/get-uploads/{maxResults?}', function($maxResults = 50) {
+		if (!Youtube::getLatestAccessTokenFromDB())
+		{
+			return Redirect::to('youtube-upload-example/get-access-token')->with('message', 'Need to get an access token first');
+		}
+		return Response::json(Youtube::getUploads($maxResults));
+	});
+
 	Route::post('youtube-upload-example', function() {
 		$rules = array(
 			'title' => 'required',
