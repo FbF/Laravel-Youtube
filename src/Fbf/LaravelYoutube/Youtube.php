@@ -66,6 +66,36 @@ class Youtube {
 		return null;
 	}
 
+	/*
+	 * Return JSON response of uploaded videos 
+	 * @return json
+	 */
+	public function getUploads($maxResults=50)
+	{
+		$channelsResponse = $this->youtube->channels->listChannels('contentDetails', array(
+			'mine' => 'true',
+		));
+
+		foreach ($channelsResponse['items'] as $channel)
+		{
+			$uploadsListId = $channel['contentDetails']['relatedPlaylists']['uploads'];
+
+			$playlistItemsResponse = $this->youtube->playlistItems->listPlaylistItems('snippet', array(
+																									'playlistId' => $uploadsListId,
+																									'maxResults' => $maxResults
+																								));
+
+			$items = array();
+			foreach ($playlistItemsResponse['items'] as $playlistItem) 
+			{
+				$videoId = $playlistItem['snippet']['resourceId']['videoId'];
+				$items[$videoId] = $playlistItem['snippet']['title'];
+			}
+		}
+
+		return $items;
+	}
+
 	/**
 	 * Uploads the passed video to the YouTube account identified by the access token in the DB and returns the
 	 * uploaded video's YouTube Video ID. Attempts to automatically refresh the token if it's expired.
