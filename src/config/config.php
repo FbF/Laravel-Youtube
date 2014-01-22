@@ -37,4 +37,9 @@ return array(
 	 */
 	'approval_prompt' => 'auto',
 
+	/**
+	 * Table name for Accestokens 
+	 */
+	'table_name' = 'fbf_youtube_access_token',
+
 );

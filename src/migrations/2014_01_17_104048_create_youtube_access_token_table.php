@@ -12,7 +12,7 @@ class CreateYoutubeAccessTokenTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('fbf_youtube_access_token', function(Blueprint $table)
+		Schema::create(\Config::get('laravel-youtube::table_name'), function(Blueprint $table)
 		{
 			$table->increments('id');
 			$table->text('access_token');
@@ -27,7 +27,7 @@ class CreateYoutubeAccessTokenTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('fbf_youtube_access_token');
+		Schema::drop(\Config::get('laravel-youtube::table_name'));
 	}
 
 }
