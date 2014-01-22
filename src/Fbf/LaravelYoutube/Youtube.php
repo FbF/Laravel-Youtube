@@ -44,7 +44,10 @@ class Youtube {
 	 */
 	public function saveAccessTokenToDB($accessToken)
 	{
-		\DB::table('fbf_youtube_access_token')->insert(array(
+		\DB::table(\Config::get('laravel-youtube::table_name'))->insert(array(
+			if(\Config::get('laravel-youtube::auth') == true){
+				'user_id' => \Auth::user()->id;
+			}
 			'access_token' => $accessToken,
 			'created_at' => \Carbon\Carbon::now(),
 		));
@@ -56,9 +59,12 @@ class Youtube {
 	 */
 	public function getLatestAccessTokenFromDB()
 	{
-		$latest = \DB::table('fbf_youtube_access_token')
-			->orderBy('created_at', 'desc')
-			->first();
+		$latest = \DB::table(\Config::get('laravel-youtube::table_name'));
+		if(\Config::get('laravel-youtube::auth') == true){
+			$latest->where('user_id', \Auth::user()->id);
+		}
+		$latest->orderBy('created_at', 'desc')
+				->first();
 		if ($latest)
 		{
 			return $latest->access_token;
