@@ -53,7 +53,7 @@ class Youtube {
 			$data['user_id'] = \Auth::user()->id;
 		}
 
-		\DB::table(\Config::get('laravel-youtube::table_name'))->insert();
+		\DB::table(\Config::get('laravel-youtube::table_name'))->insert($data);
 	}
 
 	/**
