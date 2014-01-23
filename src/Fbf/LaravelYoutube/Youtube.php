@@ -62,12 +62,16 @@ class Youtube {
 	 */
 	public function getLatestAccessTokenFromDB()
 	{
-		$latest = \DB::table(\Config::get('laravel-youtube::table_name'));
-		if(\Config::get('laravel-youtube::auth') == true){
-			$latest->where('user_id', \Auth::user()->id);
-		}
-		$latest->orderBy('created_at', 'desc')
+		$latest = \DB::table(\Config::get('laravel-youtube::table_name'))
+				->orderBy('created_at', 'desc')
 				->first();
+
+		if(\Config::get('laravel-youtube::auth') == true){
+			$latest = \DB::table(\Config::get('laravel-youtube::table_name'))
+				->where('user_id', \Auth::user()->id)
+				->orderBy('created_at', 'desc')->first();
+		}
+		
 		if ($latest)
 		{
 			return $latest->access_token;
