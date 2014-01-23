@@ -44,13 +44,16 @@ class Youtube {
 	 */
 	public function saveAccessTokenToDB($accessToken)
 	{
-		\DB::table(\Config::get('laravel-youtube::table_name'))->insert(array(
-			if(\Config::get('laravel-youtube::auth') == true){
-				'user_id' => \Auth::user()->id;
-			}
+		$data = array(
 			'access_token' => $accessToken,
 			'created_at' => \Carbon\Carbon::now(),
-		));
+		);
+
+		if(\Config::get('laravel-youtube::auth') == true) {
+			$data['user_id'] = \Auth::user()->id;
+		}
+
+		\DB::table(\Config::get('laravel-youtube::table_name'))->insert();
 	}
 
 	/**
