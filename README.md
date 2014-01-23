@@ -1,15 +1,16 @@
 Laravel-Youtube
 ===============
 
-A Laravel package to upload videos to a YouTube channel
+A Laravel package to upload videos to a YouTube channel and get a list of uploaded videos
 
 It is intended for use in a website where users can upload a video file which is then uploaded to a single Youtube
-account, probably owned by the website owner. The account can be public or unlisted and this essentially allows you to
-use Youtube as a video transcoding, hosting, serving and playback service provider.
+account, probably owned by the website owner, or to an individuals YouTube account. The account can be public or
+unlisted and this essentially allows you to use Youtube as a video transcoding, hosting, serving and playback service
+provider.
 
-In addition to the upload functionality you can use in your own app, the package also includes the functionality to get
-and store an access token, so that users can upload their videos to your account without you having to authorise them
-each time. Google's access tokens are short lived, they only last 1 hour, but by default your app will get offline
+In addition to the upload and lsit functionality you can use in your own app, the package also includes the functionality
+to get and store an access token, so that users can upload their videos to your account without you having to authorise
+them each time. Google's access tokens are short lived, they only last 1 hour, but by default your app will get offline
 access which means as well as an access_token, you also get a refresh_token that can be used to renew the access token.
 The package handles storing the access_token and refresh_token in a database table (migration included) and will also
 handle automatically getting a new access_token, using the refresh_token, when an access_token expires.
@@ -91,17 +92,18 @@ alias a real domain in your VirtualHost config and add it to your hosts file.
 
 Now copy the client ID and client secret into the `app/config/packages/fbf/laravel-youtube/config.php` file.
 
-Before the next step, ensure that the Google Account you sign in with already has a YouTube Channel. If you have created
-a new Google Account just for your project, you don't get a YouTube channel automatically, this is an extra step. When
-you are on www.youtube.com and you go to try and upload a video manually, it will prompt you to create a channel. This
-gives you another Google account confusingly.
-
+If you are going to allow all uploads to go into a single channel, before the next step, ensure that the Google Account
+you sign in with already has a YouTube Channel. If you have created a new Google Account just for your project, you
+don't get a YouTube channel automatically, this is an extra step. When you are on www.youtube.com and you go to try and
+upload a video manually, it will prompt you to create a channel. This gives you another Google account confusingly.
 Finally, visit "http://mydomain.com/youtube-upload-example" in your browser, you should be redirected to
 "http://mydomain.com/youtube-upload-example/get-access-token". Click "Connect Me" and then approve the app. You should
 then be redirected back to http://mydomain.com/youtube-upload-example/oauth2-callback" which should display your access
-token and say that it has been added to the database.
+token and say that it has been added to the database. Now you should be able to upload a video, try the example.
 
-Now you should be able to upload a video, try the example.
+If you are going to allow different users to upload to their own channels set the `laravel-youtube::auth` config setting
+to `true` and then create some actions and views in your app that use the functionality from the sample routes and
+example view provided, to allow your users to authenticate for you.
 
 ## Todo
 
