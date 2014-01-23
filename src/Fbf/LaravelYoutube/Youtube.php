@@ -44,7 +44,10 @@ class Youtube {
 	 */
 	public function saveAccessTokenToDB($accessToken)
 	{
-		\DB::table('fbf_youtube_access_token')->insert(array(
+		\DB::table(\Config::get('laravel-youtube::table_name'))->insert(array(
+			if(\Config::get('laravel-youtube::auth') == true){
+				'user_id' => \Auth::user()->id;
+			}
 			'access_token' => $accessToken,
 			'created_at' => \Carbon\Carbon::now(),
 		));
@@ -56,14 +59,47 @@ class Youtube {
 	 */
 	public function getLatestAccessTokenFromDB()
 	{
-		$latest = \DB::table('fbf_youtube_access_token')
-			->orderBy('created_at', 'desc')
-			->first();
+		$latest = \DB::table(\Config::get('laravel-youtube::table_name'));
+		if(\Config::get('laravel-youtube::auth') == true){
+			$latest->where('user_id', \Auth::user()->id);
+		}
+		$latest->orderBy('created_at', 'desc')
+				->first();
 		if ($latest)
 		{
 			return $latest->access_token;
 		}
 		return null;
+	}
+
+	/*
+	 * Return JSON response of uploaded videos 
+	 * @return json
+	 */
+	public function getUploads($maxResults=50)
+	{
+		$channelsResponse = $this->youtube->channels->listChannels('contentDetails', array(
+			'mine' => 'true',
+		));
+
+		foreach ($channelsResponse['items'] as $channel)
+		{
+			$uploadsListId = $channel['contentDetails']['relatedPlaylists']['uploads'];
+
+			$playlistItemsResponse = $this->youtube->playlistItems->listPlaylistItems('snippet', array(
+																									'playlistId' => $uploadsListId,
+																									'maxResults' => $maxResults
+																								));
+
+			$items = array();
+			foreach ($playlistItemsResponse['items'] as $playlistItem) 
+			{
+				$videoId = $playlistItem['snippet']['resourceId']['videoId'];
+				$items[$videoId] = $playlistItem['snippet']['title'];
+			}
+		}
+
+		return $items;
 	}
 
 	/**

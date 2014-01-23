@@ -25,7 +25,7 @@ return array(
 	/**
 	 * Scopes
 	 */
-	'scopes' => array('https://www.googleapis.com/auth/youtube.upload'),
+	'scopes' => array('https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'),
 
 	/**
 	 * Access type
@@ -36,5 +36,16 @@ return array(
 	 * Approval prompt
 	 */
 	'approval_prompt' => 'auto',
+
+	/**
+	 * Table name for Accestokens 
+	 */
+	'table_name' = 'fbf_youtube_access_token',
+
+	/** 
+	 * Save and access the authentication tokens based on the Authenticated user. 
+	 * Preferable when your system makes use of multiple users with Laravels authentication
+	 */
+	'auth' = false;
 
 );
