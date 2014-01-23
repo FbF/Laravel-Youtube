@@ -98,11 +98,15 @@ class Youtube {
 																									'maxResults' => $maxResults
 																								));
 
-			$items = array();
+			$items = [];
 			foreach ($playlistItemsResponse['items'] as $playlistItem) 
 			{
-				$videoId = $playlistItem['snippet']['resourceId']['videoId'];
-				$items[$videoId] = $playlistItem['snippet']['title'];
+				$video = [];
+				$video['videoId'] 		= $playlistItem['snippet']['resourceId']['videoId'];
+				$video['title'] 		= $playlistItem['snippet']['title'];
+				$video['publishedAt'] 	= $playlistItem['snippet']['publishedAt'];
+
+				array_push($items, $video);
 			}
 		}
 
