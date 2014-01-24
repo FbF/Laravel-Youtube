@@ -28,8 +28,9 @@ class Youtube {
 		$this->client->setClientSecret(\Config::get('laravel-youtube::client_secret'));
 		$this->client->setScopes(\Config::get('laravel-youtube::scopes'));
 		$this->client->setAccessType(\Config::get('laravel-youtube::access_type'));
+		$this->client->setApprovalPrompt(\Config::get('laravel-youtube::approval_prompt'));
 		$this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube::redirect_uri')));
-		$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
+		$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);		
 		$this->youtube = new \Google_Service_YouTube($this->client);
 		$accessToken = $this->getLatestAccessTokenFromDB();
 		if ($accessToken)
