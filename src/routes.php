@@ -9,7 +9,7 @@ if (App::environment() != 'production')
 	});
 
 	Route::get('youtube-upload-example/oauth2-callback', function() {
-		if (!isset(Input::get('code')))
+		if (!isset($_GET['code']))
 		{
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', '$_GET[code] not set');
 		}
