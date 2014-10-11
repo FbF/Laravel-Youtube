@@ -25,7 +25,9 @@ return array(
 	/**
 	 * Scopes
 	 */
-	'scopes' => array('https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'),
+	'scopes' => array(	'https://www.googleapis.com/auth/youtube.upload',
+				'https://www.googleapis.com/auth/youtube.readonly',
+				'https://www.googleapis.com/auth/youtube'),
 
 	/**
 	 * Access type
@@ -49,3 +51,5 @@ return array(
 	'auth' => false,
 
 );
+
+
