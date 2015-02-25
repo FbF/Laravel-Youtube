@@ -169,23 +169,42 @@ class Youtube {
 		$video->setSnippet($snippet);
 		$video->setStatus($status);
 
-		$result = $this->youtube->videos->insert(
-			'status,snippet',
-			$video,
-			array(
-				'data'       => file_get_contents( $data['video']->getRealPath() ),
-				'mimeType'   => $data['video']->getMimeType(),
-				'uploadType' => 'multipart'
-			)
-		);
+		$videoPath = $data['file']->getRealPath();
+		$chunkSizeBytes = 1 * 1024 * 1024;
+		// Setting the defer flag to true tells the client to return a request which can be called
+		// with ->execute(); instead of making the API call immediately.
+		$this->client->setDefer(true);
 
-		if (!($result instanceof \Google_Service_YouTube_Video))
-		{
-			throw new \Exception('Expecting instance of Google_Service_YouTube_Video, got:' . $result);
+		// Create a request for the API's videos.insert method to create and upload the video.
+		$insertRequest = $this->youtube->videos->insert("status,snippet", $video);
+
+		// Create a MediaFileUpload object for resumable uploads.
+		$media = new \Google_Http_MediaFileUpload(
+			$this->client,
+			$insertRequest,
+			'video/*',
+			null,
+			true,
+			$chunkSizeBytes
+		);
+		$media->setFileSize(filesize($videoPath));
+
+		// Read the media file and upload it chunk by chunk.
+		$status = false;
+		$handle = fopen($videoPath, "rb");
+		while (!$status && !feof($handle)) {
+			$chunk = fread($handle, $chunkSizeBytes);
+			$status = $media->nextChunk($chunk);
 		}
 
-		return $result->getId();
+		fclose($handle);
 
+		// If you want to make other calls after the file upload, set setDefer back to false
+		$this->client->setDefer(false);
+
+		//No need to handle Exception
+
+		return $status['id'];
 	}
 
 	/**
