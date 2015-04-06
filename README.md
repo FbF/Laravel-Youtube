@@ -8,7 +8,7 @@ account, probably owned by the website owner, or to an individuals YouTube accou
 unlisted and this essentially allows you to use Youtube as a video transcoding, hosting, serving and playback service
 provider.
 
-In addition to the upload and lsit functionality you can use in your own app, the package also includes the functionality
+In addition to the upload and list functionality you can use in your own app, the package also includes the functionality
 to get and store an access token, so that users can upload their videos to your account without you having to authorise
 them each time. Google's access tokens are short lived, they only last 1 hour, but by default your app will get offline
 access which means as well as an access_token, you also get a refresh_token that can be used to renew the access token.
