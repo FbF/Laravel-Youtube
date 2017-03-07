@@ -11,7 +11,7 @@
     "require": {
         "php": ">=5.3.0",
         "illuminate/support": "4.*",
-        "google/apiclient": "dev-master"
+        "google/google-api-php-client": "dev-master"
     },
     "autoload": {
         "classmap": [
