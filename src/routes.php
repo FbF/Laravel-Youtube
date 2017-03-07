@@ -5,7 +5,7 @@ if (App::environment() != 'production')
 
 	Route::get('youtube-upload-example/get-access-token', function() {
 		$authUrl = Youtube::createAuthUrl();
-		return View::make('laravel-youtube::example')->with(compact('authUrl'));
+		return View::make('laravel-youtube.example')->with(compact('authUrl'));
 	});
 
 	Route::get('youtube-upload-example/oauth2-callback', function() {
@@ -15,7 +15,7 @@ if (App::environment() != 'production')
 		}
 		$accessToken = Youtube::authenticate(Input::get('code'));
 		Youtube::saveAccessTokenToDB($accessToken);
-		return View::make('laravel-youtube::example')->with(compact('accessToken'));
+		return View::make('laravel-youtube.example')->with(compact('accessToken'));
 	});
 
 	Route::get('youtube-upload-example', function() {
@@ -23,7 +23,7 @@ if (App::environment() != 'production')
 		{
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', 'Need to get an access token first');
 		}
-		return View::make('laravel-youtube::example');
+		return View::make('laravel-youtube.example');
 	});
 
 	Route::get('youtube-upload-example/get-uploads/{maxResults?}', function($maxResults = 50) {
