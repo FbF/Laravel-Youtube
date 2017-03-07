@@ -23,13 +23,13 @@ class Youtube {
 	public function __construct(\Google_Client $client)
 	{
 		$this->client = $client;
-		$this->client->setApplicationName(\Config::get('laravel-youtube::application_name'));
-		$this->client->setClientId(\Config::get('laravel-youtube::client_id'));
-		$this->client->setClientSecret(\Config::get('laravel-youtube::client_secret'));
-		$this->client->setScopes(\Config::get('laravel-youtube::scopes'));
-		$this->client->setAccessType(\Config::get('laravel-youtube::access_type'));
-		$this->client->setApprovalPrompt(\Config::get('laravel-youtube::approval_prompt'));
-		$this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube::redirect_uri')));
+		$this->client->setApplicationName(\Config::get('laravel-youtube.application_name'));
+		$this->client->setClientId(\Config::get('laravel-youtube.client_id'));
+		$this->client->setClientSecret(\Config::get('laravel-youtube.client_secret'));
+		$this->client->setScopes(\Config::get('laravel-youtube.scopes'));
+		$this->client->setAccessType(\Config::get('laravel-youtube.access_type'));
+		$this->client->setApprovalPrompt(\Config::get('laravel-youtube.approval_prompt'));
+		$this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube.redirect_uri')));
 		//$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
 		$this->youtube = new \Google_Service_YouTube($this->client);
 		$accessToken = $this->getLatestAccessTokenFromDB();
@@ -50,11 +50,11 @@ class Youtube {
 			'created_at' => \Carbon\Carbon::now(),
 		);
 
-		if(\Config::get('laravel-youtube::auth') == true) {
+		if(\Config::get('laravel-youtube.auth') == true) {
 			$data['user_id'] = \Auth::user()->id;
 		}
 
-		\DB::table(\Config::get('laravel-youtube::table_name'))->insert($data);
+		\DB::table(\Config::get('laravel-youtube.table_name'))->insert($data);
 	}
 
 	/**
@@ -63,12 +63,12 @@ class Youtube {
 	 */
 	public function getLatestAccessTokenFromDB()
 	{
-		$latest = \DB::table(\Config::get('laravel-youtube::table_name'))
+		$latest = \DB::table(\Config::get('laravel-youtube.table_name'))
 				->orderBy('created_at', 'desc')
 				->first();
 
-		if(\Config::get('laravel-youtube::auth') == true){
-			$latest = \DB::table(\Config::get('laravel-youtube::table_name'))
+		if(\Config::get('laravel-youtube.auth') == true){
+			$latest = \DB::table(\Config::get('laravel-youtube.table_name'))
 				->where('user_id', \Auth::user()->id)
 				->orderBy('created_at', 'desc')->first();
 		}
