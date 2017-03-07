@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateYoutubeAccessTokenTable extends Migration {
+/*class CreateYoutubeAccessTokenTable extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -33,4 +33,4 @@ class CreateYoutubeAccessTokenTable extends Migration {
 		Schema::drop(\Config::get('laravel-youtube::table_name'));
 	}
 
-}
+}*/
