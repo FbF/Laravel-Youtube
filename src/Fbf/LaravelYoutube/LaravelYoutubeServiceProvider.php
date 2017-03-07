@@ -19,7 +19,7 @@ class LaravelYoutubeServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //$this->package('fbf/laravel-youtube');
+        $this->package('fbf/laravel-youtube');
         $this->publishes(
             [
                 __DIR__ . '/config' => config_path('laravel-youtube'),
