@@ -50,7 +50,7 @@ class LaravelYoutubeServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return array('laravel-youtube');
+        return array('youtube');
     }
 
     public function isLegacyLaravel()
