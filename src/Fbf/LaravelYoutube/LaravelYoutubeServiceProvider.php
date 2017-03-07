@@ -25,7 +25,7 @@ class LaravelYoutubeServiceProvider extends ServiceProvider
             $this->package('fbf/laravel-youtube', 'fbf/laravel-youtube');
         }
 
-        $this->publishes(array(__DIR__ . '/../../config/laravel-youtube' => config_path('laravel-youtube.php')));
+        $this->publishes(array(__DIR__ . '/../../config/laravel-youtube.php' => config_path('laravel-youtube.php')));
 
         include __DIR__ . '/../../routes.php';
 
