@@ -13,7 +13,7 @@ if (App::environment() != 'production')
 		{
 			return Redirect::to('youtube-upload-example/get-access-token')->with('message', '$_GET[code] not set');
 		}
-		$accessToken = Youtube::authenticate(Input::get('code'));
+		$accessToken = Youtube::authenticate($_GET['code']);
 		Youtube::saveAccessTokenToDB($accessToken);
 		return View::make('laravel-youtube.example')->with(compact('accessToken'));
 	});
