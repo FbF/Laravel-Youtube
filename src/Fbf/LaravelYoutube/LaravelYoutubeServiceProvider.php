@@ -1,6 +1,8 @@
 <?php namespace Fbf\LaravelYoutube;
 
+use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class LaravelYoutubeServiceProvider extends ServiceProvider
 {
@@ -19,14 +21,13 @@ class LaravelYoutubeServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //$this->package('fbf/laravel-youtube');
-        include __DIR__ . '/../../routes.php';
-        $this->publishes(
-            [
-                __DIR__ . '/config' => config_path('laravel-youtube'),
-            ]
-        );
+        if ($this->isLegacyLaravel() || $this->isOldLaravel()) {
+            $this->package('fbf/laravel-youtube', 'fbf/laravel-youtube');
+        }
 
+        $this->publishes(array(__DIR__ . '/../../config/laravel-youtube' => config_path('laravel-youtube.php')));
+
+        include __DIR__ . '/../../routes.php';
 
     }
 
@@ -49,7 +50,16 @@ class LaravelYoutubeServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return array();
+        return array('laravel-youtube');
+    }
+
+    public function isLegacyLaravel()
+    {
+        return Str::startsWith(Application::VERSION, array('4.1.', '4.2.'));
+    }
+    public function isOldLaravel()
+    {
+        return Str::startsWith(Application::VERSION, '4.0.');
     }
 
 }
