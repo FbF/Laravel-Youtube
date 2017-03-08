@@ -31,12 +31,15 @@ class Youtube
         $this->client->setAccessType(\Config::get('laravel-youtube.access_type'));
         $this->client->setApprovalPrompt(\Config::get('laravel-youtube.approval_prompt'));
         $this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube.redirect_uri')));
+
+        $this->client->setAccessType('offline'); //generates refresh token
+        $this->client->setApprovalPrompt("force");
+
         //$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
         $this->youtube = new \Google_Service_YouTube($this->client);
         $accessToken = $this->getLatestAccessTokenFromDB();
         if ($accessToken) {
-            //dd(json_encode($accessToken));
-            $this->client->setAccessToken(json_encode($accessToken));
+            $this->client->setAccessToken($accessToken);
         }
     }
 
@@ -46,12 +49,14 @@ class Youtube
      */
     public function saveAccessTokenToDB($accessToken)
     {
+        //todo: check is there access_token field valid
+        if (is_array($accessToken)) {
+            $accessToken = json_encode($accessToken);
+        };
+
         $data = array(
-            'access_token'  => $accessToken['access_token'],
-            'token_type'    => $accessToken['token_type'],
-            'expires_in'    => $accessToken['expires_in'],
-            'created'       => $accessToken['created'],
-            'created_at'    => \Carbon\Carbon::now(),
+            'access_token' => $accessToken,
+            'created_at' => \Carbon\Carbon::now(),
         );
 
         if (\Config::get('laravel-youtube.auth') == true) {
@@ -78,7 +83,7 @@ class Youtube
         }
 
         if ($latest) {
-            return $latest;
+            return $latest->access_token;
         }
         return null;
     }
@@ -126,7 +131,10 @@ class Youtube
     public function upload(array $data)
     {
         $accessToken = $this->client->getAccessToken();
-
+        //        echo '<pre>';
+        //        print_r($accessToken);
+        //        echo '</pre>';
+        //        die();
         if (is_null($accessToken)) {
             throw new \Exception('You need an access token to upload');
         }
@@ -137,7 +145,7 @@ class Youtube
             $refreshToken = $accessToken->refresh_token;
             $this->client->refreshToken($refreshToken);
             $newAccessToken = $this->client->getAccessToken();
-            $this->saveAccessTokenToDB($newAccessToken);
+            $this->saveAccessTokenToDB(json_encode($newAccessToken));
         }
 
         $snippet = new \Google_Service_YouTube_VideoSnippet();
@@ -203,7 +211,7 @@ class Youtube
             $refreshToken = $accessToken->refresh_token;
             $this->client->refreshToken($refreshToken);
             $newAccessToken = $this->client->getAccessToken();
-            $this->saveAccessTokenToDB($newAccessToken);
+            $this->saveAccessTokenToDB(json_encode($newAccessToken));
         }
 
         $result = $this->youtube->videos->delete($video_id);

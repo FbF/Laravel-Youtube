@@ -15,7 +15,7 @@ if (App::environment() != 'production')
         }
         try {
             $accessToken = Youtube::authenticate($_GET['code']);
-            Youtube::saveAccessTokenToDB($accessToken);
+            Youtube::saveAccessTokenToDB(json_encode($accessToken));
         } catch (Exception $e) {
             // Do something here
             dd($e);
