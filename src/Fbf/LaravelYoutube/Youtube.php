@@ -28,11 +28,9 @@ class Youtube
         $this->client->setClientId(\Config::get('laravel-youtube.client_id'));
         $this->client->setClientSecret(\Config::get('laravel-youtube.client_secret'));
         $this->client->setScopes(\Config::get('laravel-youtube.scopes'));
-        $this->client->setAccessType(\Config::get('laravel-youtube.access_type'));
         $this->client->setApprovalPrompt(\Config::get('laravel-youtube.approval_prompt'));
         $this->client->setRedirectUri(\URL::to(\Config::get('laravel-youtube.redirect_uri')));
-
-        $this->client->setAccessType('offline'); //generates refresh token
+        $this->client->setAccessType(\Config::get('laravel-youtube.access_type')); //generates refresh token
         $this->client->setApprovalPrompt("force");
 
         //$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
@@ -82,10 +80,7 @@ class Youtube
                 ->first();
         }
 
-        if ($latest) {
-            return $latest->access_token;
-        }
-        return null;
+        return $latest ? (is_array($latest) ? $latest['access_token'] : $latest->access_token) : null;
     }
 
     /*
@@ -130,24 +125,11 @@ class Youtube
      */
     public function upload(array $data)
     {
-        $accessToken = $this->client->getAccessToken();
-        //        echo '<pre>';
-        //        print_r($accessToken);
-        //        echo '</pre>';
-        //        die();
-        if (is_null($accessToken)) {
-            throw new \Exception('You need an access token to upload');
-        }
+        $this->handleAccessToken();
 
-        // Attempt to refresh the access token if it's expired and save the new one in the database
-        if ($this->client->isAccessTokenExpired()) {
-            $accessToken = json_decode($accessToken);
-            $refreshToken = $accessToken->refresh_token;
-            $this->client->refreshToken($refreshToken);
-            $newAccessToken = $this->client->getAccessToken();
-            $this->saveAccessTokenToDB(json_encode($newAccessToken));
-        }
-
+        /* ------------------------------------
+        #. Setup the Snippet
+        ------------------------------------ */
         $snippet = new \Google_Service_YouTube_VideoSnippet();
         if (array_key_exists('title', $data)) {
             $snippet->setTitle($data['title']);
@@ -162,30 +144,249 @@ class Youtube
             $snippet->setCategoryId($data['category_id']);
         }
 
+        /* ------------------------------------
+        #. Set the Privacy Status
+        ------------------------------------ */
         $status = new \Google_Service_YouTube_VideoStatus();
         if (array_key_exists('status', $data)) {
             $status->privacyStatus = $data['status'];
         }
 
+        /* ------------------------------------
+        #. Set the Snippet & Status
+        ------------------------------------ */
         $video = new \Google_Service_YouTube_Video();
         $video->setSnippet($snippet);
         $video->setStatus($status);
 
-        $result = $this->youtube->videos->insert(
+        /* ------------------------------------
+        #. Set the Chunk Size
+        ------------------------------------ */
+        $chunkSize = 1 * 1024 * 1024;
+        /* ------------------------------------
+        #. Set the defer to true
+        ------------------------------------ */
+        $this->client->setDefer(true);
+        /* ------------------------------------
+        #. Build the request
+        ------------------------------------ */
+        $insert = $this->youtube->videos->insert(
             'status,snippet',
-            $video,
-            array(
-                'data' => file_get_contents($data['video']->getRealPath()),
-                'mimeType' => $data['video']->getMimeType(),
-                'uploadType' => 'multipart'
-            )
+            $video
         );
 
-        if (!($result instanceof \Google_Service_YouTube_Video)) {
-            throw new \Exception('Expecting instance of Google_Service_YouTube_Video, got:' . $result);
+        //        if (!($insert instanceof \Google_Service_YouTube_Video)) {
+        //            throw new \Exception('Expecting instance of Google_Service_YouTube_Video, got:' . $result);
+        //        }
+
+        /* ------------------------------------
+        #. Upload
+        ------------------------------------ */
+        $media = new \Google_Http_MediaFileUpload(
+            $this->client,
+            $insert,
+            'video/*',
+            null,
+            true,
+            $chunkSize
+        );
+        /* ------------------------------------
+        #. Set the Filesize
+        ------------------------------------ */
+        $media->setFileSize(filesize($data['video']->getRealPath()));
+        /* ------------------------------------
+        #. Read the file and upload in chunks
+        ------------------------------------ */
+        $status = false;
+        $handle = fopen($data['video']->getRealPath(), "rb");
+        while (!$status && !feof($handle)) {
+            $chunk = fread($handle, $chunkSize);
+            $status = $media->nextChunk($chunk);
+        }
+        fclose($handle);
+        $this->client->setDefer(false);
+        /* ------------------------------------
+        #. Set the Uploaded Video ID
+        ------------------------------------ */
+        $this->videoId = $status['id'];
+        //return $this;
+
+        //$this->createPlaylist($data);
+
+        return $this->videoId;
+
+    }
+
+    public function createPlaylist($data, $youtubeVideoId)
+    {
+        $this->handleAccessToken();
+        try {
+            $user = auth()->user();
+
+            // This code creates a new, private playlist in the authorized user's
+            // channel and adds a video to the playlist.
+            // 1. Create the snippet for the playlist. Set its title and description.
+            $playlistSnippet = new \Google_Service_YouTube_PlaylistSnippet();
+            $playlistSnippet->setTitle('FNF Playlist for: ' . $user->username . '-' . $user->id);
+            $playlistSnippet->setDescription("A private playlist created for {$user->username}");
+
+            // 2. Define the playlist's status.
+            $playlistStatus = new \Google_Service_YouTube_PlaylistStatus();
+            $playlistStatus->setPrivacyStatus('private');
+
+            // 3. Define a playlist resource and associate the snippet and status
+            // defined above with that resource.
+            $youTubePlaylist = new \Google_Service_YouTube_Playlist();
+            $youTubePlaylist->setSnippet($playlistSnippet);
+            $youTubePlaylist->setStatus($playlistStatus);
+            $youTubePlaylist->setKind('youtube#' .$user->username);
+
+
+            // 4. Call the playlists.insert method to create the playlist. The API
+            // response will contain information about the new playlist.
+            //todo: check if there is already playlist for this user
+            $playlist = $this->searchForPlayList();
+            if (!empty($playlist)) {
+                //dd($playlist);
+                $playlistId = $playlist['id'];
+            } else {
+                $playlistResponse = $this->youtube->playlists->insert('snippet,status',$youTubePlaylist, []);
+                $playlistId = $playlistResponse['id'];
+            }
+
+            // 5. Add a video to the playlist. First, define the resource being added
+            // to the playlist by setting its video ID and kind.
+            $resourceId = new \Google_Service_YouTube_ResourceId();
+            $resourceId->setVideoId($youtubeVideoId);
+            $resourceId->setKind('youtube#video');
+
+            // Then define a snippet for the playlist item. Set the playlist item's
+            // title if you want to display a different value than the title of the
+            // video being added. Add the resource ID and the playlist ID retrieved
+            // in step 4 to the snippet as well.
+            $playlistItemSnippet = new \Google_Service_YouTube_PlaylistItemSnippet();
+            $playlistItemSnippet->setTitle('First video in the test playlist');
+            $playlistItemSnippet->setPlaylistId($playlistId);
+            $playlistItemSnippet->setResourceId($resourceId);
+
+            // Finally, create a playlistItem resource and add the snippet to the
+            // resource, then call the playlistItems.insert method to add the playlist
+            // item.
+            $playlistItem = new \Google_Service_YouTube_PlaylistItem();
+            $playlistItem->setSnippet($playlistItemSnippet);
+            $playlistItemResponse = $this->youtube->playlistItems->insert(
+                'snippet,contentDetails', $playlistItem, array());
+
+            return $playlistId;
+        } catch (Google_Service_Exception $e) {
+            //            $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
+            //                                htmlspecialchars($e->getMessage()));
+
+            throw new \Exception($e->getMessage());
+        } catch (Google_Exception $e) {
+            //$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
+            //                   htmlspecialchars($e->getMessage()));
+            throw new \Exception($e->getMessage());
         }
 
-        return $result->getId();
+    }
+
+    public function getPlayLists()
+    {
+        return $this->youtube->playlists->listPlaylists('contentDetails, id, player, status, snippet', ['mine' => true]);
+
+        //        return $this->youtube->playlistItems->listPlaylistItems('snippet', array(
+        //            'playlistId' => $uploadsListId,
+        //            'maxResults' => $maxResults
+        //        ));
+    }
+
+    public function searchForPlayList()
+    {
+        //dd($this->getPlayLists());
+        $user = auth()->user();
+        $playLists = $this->getPlayLists();
+
+        return collect($playLists['modelData']['items'])->filter(function ($item) use ($user){
+            //FNF Playlist for: student
+            //
+            return $item['snippet']['title'] == 'FNF Playlist for: ' . $user->username . '-' . $user->id;
+            //dd($item['snippet']['title']);
+        })->first();
+        //dd($s);
+        //collect($playLists['modelData'])
+
+    }
+
+    /**
+     * Set a Custom Thumbnail for the Upload
+     *
+     * @param  string $imagePath
+     *
+     * @return self
+     */
+    function withThumbnail($imagePath)
+    {
+        try {
+            $videoId = $this->getVideoId();
+            // Specify the size of each chunk of data, in bytes. Set a higher value for
+            // reliable connection as fewer chunks lead to faster uploads. Set a lower
+            // value for better recovery on less reliable connections.
+            $chunkSizeBytes = 1 * 1024 * 1024;
+            // Setting the defer flag to true tells the client to return a request which can be called
+            // with ->execute(); instead of making the API call immediately.
+            $this->client->setDefer(true);
+            // Create a request for the API's thumbnails.set method to upload the image and associate
+            // it with the appropriate video.
+            $setRequest = $this->youtube->thumbnails->set($videoId);
+            // Create a MediaFileUpload object for resumable uploads.
+            $media = new \Google_Http_MediaFileUpload(
+                $this->client,
+                $setRequest,
+                'image/png',
+                null,
+                true,
+                $chunkSizeBytes
+            );
+            $media->setFileSize(filesize($imagePath));
+            // Read the media file and upload it chunk by chunk.
+            $status = false;
+            $handle = fopen($imagePath, "rb");
+            while (!$status && !feof($handle)) {
+                $chunk = fread($handle, $chunkSizeBytes);
+                $status = $media->nextChunk($chunk);
+            }
+            fclose($handle);
+            // If you want to make other calls after the file upload, set setDefer back to false
+            $this->client->setDefer(false);
+            $this->thumbnailUrl = $status['items'][0]['default']['url'];
+        } catch (\Google_Service_Exception $e) {
+            die($e->getMessage());
+        } catch (\Google_Exception $e) {
+            die($e->getMessage());
+        }
+        return $this;
+    }
+
+
+    /**
+     * Return the Video ID
+     *
+     * @return string
+     */
+    function getVideoId()
+    {
+        return $this->videoId;
+    }
+
+    /**
+     * Return the URL for the Custom Thumbnail
+     *
+     * @return string
+     */
+    function getThumbnailUrl()
+    {
+        return $this->thumbnailUrl;
 
     }
 
@@ -197,24 +398,14 @@ class Youtube
      * @return true if the video was deleted and false if it was not
      * @throws \Exception
      */
-    public function delete($video_id)
+    public function delete($id)
     {
-        $accessToken = $this->client->getAccessToken();
+        $this->handleAccessToken();
 
-        if (is_null($accessToken)) {
-            throw new \Exception('You need an access token to delete.');
-        }
+        if (!$this->exists($id))
+            return false;
 
-        // Attempt to refresh the access token if it's expired and save the new one in the database
-        if ($this->client->isAccessTokenExpired()) {
-            $accessToken = json_decode($accessToken);
-            $refreshToken = $accessToken->refresh_token;
-            $this->client->refreshToken($refreshToken);
-            $newAccessToken = $this->client->getAccessToken();
-            $this->saveAccessTokenToDB(json_encode($newAccessToken));
-        }
-
-        $result = $this->youtube->videos->delete($video_id);
+        $result = $this->youtube->videos->delete($id);
 
         if (!$result) {
             throw new \Exception("Couldn't delete the video from the youtube account.");
@@ -224,6 +415,45 @@ class Youtube
 
     }
 
+    /**
+     * Check if a YouTube video exists by it's ID.
+     *
+     * @param  int $id
+     *
+     * @return bool
+     */
+    public function exists($id)
+    {
+        $this->handleAccessToken();
+        $response = $this->youtube->videos->listVideos('status', ['id' => $id]);
+        if (empty($response->items))
+            return false;
+        return true;
+    }
+
+    /**
+     * Handle the Access token.
+     */
+    private function handleAccessToken()
+    {
+        $accessToken = $this->client->getAccessToken();
+
+        if (is_null($accessToken)) {
+            throw new \Exception('An access token is required to delete a video.');
+        }
+
+        if ($this->client->isAccessTokenExpired()) {
+            if (!is_array($accessToken)) {
+                $accessToken = json_decode($accessToken);
+                $refreshToken = $accessToken->refresh_token;
+            } else {
+                $refreshToken = $accessToken['refresh_token'];
+            }
+            $this->client->refreshToken($refreshToken);
+            $newAccessToken = $this->client->getAccessToken();
+            $this->saveAccessTokenToDB($newAccessToken);
+        }
+    }
 
     /**
      * Method calls are passed on to the injected instance of \Google_Client. Used for calls like:
