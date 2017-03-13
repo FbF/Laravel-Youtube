@@ -232,7 +232,7 @@ class Youtube
 
             // 2. Define the playlist's status.
             $playlistStatus = new \Google_Service_YouTube_PlaylistStatus();
-            $playlistStatus->setPrivacyStatus('private');
+            $playlistStatus->setPrivacyStatus('unlisted');
 
             // 3. Define a playlist resource and associate the snippet and status
             // defined above with that resource.
