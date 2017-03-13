@@ -52,6 +52,7 @@ class Youtube
             if (!empty($accessToken['error'])){
                 return;
             }
+
             $accessToken = json_encode($accessToken);
         };
 
@@ -76,13 +77,10 @@ class Youtube
         if (\Config::get('laravel-youtube.auth') == true) {
             $latest = \DB::table(\Config::get('laravel-youtube.table_name'))
                 ->where('user_id', \Auth::user()->id)
-                ->whereId(1)
-                ->first();
-            //->orderBy('created_at', 'desc')->first();
+                ->orderBy('created_at', 'desc')->first();
         } else {
             $latest = \DB::table(\Config::get('laravel-youtube.table_name'))
-                //->orderBy('created_at', 'desc')
-                ->whereId(1)
+                ->orderBy('created_at', 'desc')
                 ->first();
         }
 
@@ -457,7 +455,7 @@ class Youtube
             }
             $this->client->refreshToken($refreshToken);
             $newAccessToken = $this->client->getAccessToken();
-            //$this->saveAccessTokenToDB($newAccessToken);
+            $this->saveAccessTokenToDB($newAccessToken);
         }
     }
 
