@@ -49,6 +49,9 @@ class Youtube
     {
         //todo: check is there access_token field valid
         if (is_array($accessToken)) {
+            if (!empty($accessToken['error'])){
+                return;
+            }
             $accessToken = json_encode($accessToken);
         };
 
@@ -73,10 +76,13 @@ class Youtube
         if (\Config::get('laravel-youtube.auth') == true) {
             $latest = \DB::table(\Config::get('laravel-youtube.table_name'))
                 ->where('user_id', \Auth::user()->id)
-                ->orderBy('created_at', 'desc')->first();
+                ->whereId(1)
+                ->first();
+            //->orderBy('created_at', 'desc')->first();
         } else {
             $latest = \DB::table(\Config::get('laravel-youtube.table_name'))
-                ->orderBy('created_at', 'desc')
+                //->orderBy('created_at', 'desc')
+                ->whereId(1)
                 ->first();
         }
 
@@ -451,7 +457,7 @@ class Youtube
             }
             $this->client->refreshToken($refreshToken);
             $newAccessToken = $this->client->getAccessToken();
-            $this->saveAccessTokenToDB($newAccessToken);
+            //$this->saveAccessTokenToDB($newAccessToken);
         }
     }
 
