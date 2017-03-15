@@ -49,7 +49,7 @@ class Youtube
     {
         //todo: check is there access_token field valid
         if (is_array($accessToken)) {
-            if (!empty($accessToken['error'])){
+            if (!empty($accessToken['error'])) {
                 return;
             }
 
@@ -87,9 +87,10 @@ class Youtube
         return $latest ? (is_array($latest) ? $latest['access_token'] : $latest->access_token) : null;
     }
 
-    /*
+    /**
      * Return JSON response of uploaded videos
-     * @return json
+     * @param int $maxResults
+     * @return array
      */
     public function getUploads($maxResults = 50)
     {
@@ -221,6 +222,14 @@ class Youtube
 
     }
 
+    /**
+     * Create playlist and insert video into playlist
+     *
+     * @param $data
+     * @param $youtubeVideoId
+     * @return mixed
+     * @throws \Exception
+     */
     public function createPlaylist($data, $youtubeVideoId)
     {
         $this->handleAccessToken();
@@ -243,7 +252,7 @@ class Youtube
             $youTubePlaylist = new \Google_Service_YouTube_Playlist();
             $youTubePlaylist->setSnippet($playlistSnippet);
             $youTubePlaylist->setStatus($playlistStatus);
-            $youTubePlaylist->setKind('youtube#' .$user->username);
+            $youTubePlaylist->setKind('youtube#' . $user->username);
 
 
             // 4. Call the playlists.insert method to create the playlist. The API
@@ -254,7 +263,7 @@ class Youtube
                 //dd($playlist);
                 $playlistId = $playlist['id'];
             } else {
-                $playlistResponse = $this->youtube->playlists->insert('snippet,status',$youTubePlaylist, []);
+                $playlistResponse = $this->youtube->playlists->insert('snippet,status', $youTubePlaylist, []);
                 $playlistId = $playlistResponse['id'];
             }
 
@@ -295,23 +304,28 @@ class Youtube
 
     }
 
+    /**
+     * Get all playlist of a user
+     *
+     * @return \Google_Service_YouTube_PlaylistListResponse
+     */
     public function getPlayLists()
     {
         return $this->youtube->playlists->listPlaylists('contentDetails, id, player, status, snippet', ['mine' => true]);
-
-        //        return $this->youtube->playlistItems->listPlaylistItems('snippet', array(
-        //            'playlistId' => $uploadsListId,
-        //            'maxResults' => $maxResults
-        //        ));
     }
 
+    /**
+     * Search playlists by title of the playlist
+     *
+     * @return mixed
+     */
     public function searchForPlayList()
     {
         //dd($this->getPlayLists());
         $user = auth()->user();
         $playLists = $this->getPlayLists();
 
-        return collect($playLists['modelData']['items'])->filter(function ($item) use ($user){
+        return collect($playLists['modelData']['items'])->filter(function ($item) use ($user) {
             //FNF Playlist for: student
             //
             return $item['snippet']['title'] == 'FNF Playlist for: ' . $user->username . '-' . $user->id;

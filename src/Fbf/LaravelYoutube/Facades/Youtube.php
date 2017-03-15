@@ -1,6 +1,6 @@
-<?php namespace Fbf\LaravelYoutube;
+<?php namespace Fbf\LaravelYoutube\Facades;
 
-class YoutubeFacade extends \Illuminate\Support\Facades\Facade {
+class Youtube extends \Illuminate\Support\Facades\Facade {
 	/**
 	 * Get the registered name of the component.
 	 *

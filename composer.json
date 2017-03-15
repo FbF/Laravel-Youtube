@@ -14,9 +14,6 @@
         "google/apiclient": "dev-master"
     },
     "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
         "psr-0": {
             "Fbf\\LaravelYoutube\\": "src/"
         }
