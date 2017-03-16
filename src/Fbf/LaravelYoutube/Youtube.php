@@ -24,19 +24,17 @@ class Youtube
     public function __construct(\Google_Client $client)
     {
         $this->client = $client;
-        $this->client->setApplicationName(\Config::get('youtube.application_name'));
-        $this->client->setClientId(\Config::get('youtube.client_id'));
-        $this->client->setClientSecret(\Config::get('youtube.client_secret'));
-        $this->client->setScopes(\Config::get('youtube.scopes'));
-        $this->client->setApprovalPrompt(\Config::get('youtube.approval_prompt'));
-        $this->client->setRedirectUri(\URL::to(\Config::get('youtube.redirect_uri')));
-        $this->client->setAccessType(\Config::get('youtube.access_type')); //generates refresh token
+        $this->client->setApplicationName(config('youtube.application_name'));
+        $this->client->setClientId(config('youtube.client_id'));
+        $this->client->setClientSecret(config('youtube.client_secret'));
+        $this->client->setScopes(config('youtube.scopes'));
+        $this->client->setApprovalPrompt(config('youtube.approval_prompt'));
+        $this->client->setAccessType(config('youtube.access_type')); //generates refresh token
         $this->client->setApprovalPrompt("force");
-
+        $this->client->setRedirectUri(url(config('youtube.routes.prefix') . '/' . config('youtube.routes.redirect_uri')));
         //$this->client->setClassConfig('Google_Http_Request', 'disable_gzip', true);
         $this->youtube = new \Google_Service_YouTube($this->client);
-        $accessToken = $this->getLatestAccessTokenFromDB();
-        if ($accessToken) {
+        if ($accessToken = $this->getLatestAccessTokenFromDB()) {
             $this->client->setAccessToken($accessToken);
         }
     }
@@ -47,25 +45,25 @@ class Youtube
      */
     public function saveAccessTokenToDB($accessToken)
     {
+
         //todo: check is there access_token field valid
         if (is_array($accessToken)) {
             if (!empty($accessToken['error'])) {
                 return;
             }
-
             $accessToken = json_encode($accessToken);
         };
-
+        //dd($accessToken);
         $data = array(
             'access_token' => $accessToken,
             'created_at' => \Carbon\Carbon::now(),
         );
 
-        if (\Config::get('youtube.auth') == true) {
+        if (config('youtube.auth') == true) {
             $data['user_id'] = \Auth::user()->id;
         }
         //dd($data);
-        \DB::table(\Config::get('youtube.table_name'))->insert($data);
+        \DB::table(config('youtube.table_name'))->insert($data);
     }
 
     /**
@@ -74,12 +72,12 @@ class Youtube
      */
     public function getLatestAccessTokenFromDB()
     {
-        if (\Config::get('youtube.auth') == true) {
-            $latest = \DB::table(\Config::get('youtube.table_name'))
+        if (config('youtube.auth') == true) {
+            $latest = \DB::table(config('youtube.table_name'))
                 ->where('user_id', \Auth::user()->id)
                 ->orderBy('created_at', 'desc')->first();
         } else {
-            $latest = \DB::table(\Config::get('youtube.table_name'))
+            $latest = \DB::table(config('youtube.table_name'))
                 ->orderBy('created_at', 'desc')
                 ->first();
         }
