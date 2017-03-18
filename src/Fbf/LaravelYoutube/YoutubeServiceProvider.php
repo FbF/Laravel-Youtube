@@ -1,6 +1,7 @@
 <?php namespace Fbf\LaravelYoutube;
 
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -25,7 +26,6 @@ class YoutubeServiceProvider extends ServiceProvider
 //            $this->package('fbf/laravel-youtube', 'fbf/laravel-youtube');
 //        }
 
-        //$this->publishes(array(__DIR__ . '/../../config/laravel-youtube.php' => config_path('laravel-youtube.php')));
         $this->publishes([
                              __DIR__.'/../../config/youtube.php' => config_path('youtube.php'),
                          ], 'config');
@@ -33,7 +33,7 @@ class YoutubeServiceProvider extends ServiceProvider
                              __DIR__.'/../../migrations/' => database_path('migrations')
                          ], 'migrations');
 
-        include __DIR__ . '/../../routes.php';
+        include __DIR__.'/../../routes/web.php';
 
     }
 
@@ -48,7 +48,7 @@ class YoutubeServiceProvider extends ServiceProvider
 //            return new Youtube(new \Google_Client);
 //        });
         $this->app->singleton(Contracts\Youtube::class, function () {
-            return new Youtube(new \Google_Client);
+            return new Youtube(new \Google_Client, new Request);
         });
         $this->app->singleton('youtube', Contracts\Youtube::class);
     }
