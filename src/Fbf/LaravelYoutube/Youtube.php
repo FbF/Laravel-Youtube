@@ -455,7 +455,7 @@ class Youtube
         $accessToken = $this->client->getAccessToken();
 
         if (is_null($accessToken)) {
-            throw new \Exception('An access token is required to delete a video.');
+            throw new \Exception('You need an access token to upload');
         }
 
         if ($this->client->isAccessTokenExpired()) {
