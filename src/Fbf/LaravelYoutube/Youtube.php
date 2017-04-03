@@ -319,19 +319,21 @@ class Youtube
      */
     public function searchForPlayList()
     {
-        //dd($this->getPlayLists());
         $user = auth()->user();
         $playLists = $this->getPlayLists();
 
-        return collect($playLists['modelData']['items'])->filter(function ($item) use ($user) {
+        //check if modelData and items key exist
+        if (!array_key_exists('modelData', $playLists) and !array_key_exists('items', $playLists['modelData'])){
+            $playlists = $playLists['items'];
+        } else {
+            $playlists = $playLists['modelData']['items'];
+        }
+
+        return collect($playLists)->filter(function ($item) use ($user) {
             //FNF Playlist for: student
-            //
             return $item['snippet']['title'] == 'FNF Playlist for: ' . $user->username . '-' . $user->id;
             //dd($item['snippet']['title']);
         })->first();
-        //dd($s);
-        //collect($playLists['modelData'])
-
     }
 
     /**
