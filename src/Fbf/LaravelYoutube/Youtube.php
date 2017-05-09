@@ -290,13 +290,8 @@ class Youtube
 
             return $playlistId;
         } catch (Google_Service_Exception $e) {
-            //            $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-            //                                htmlspecialchars($e->getMessage()));
-
             throw new \Exception($e->getMessage());
         } catch (Google_Exception $e) {
-            //$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-            //                   htmlspecialchars($e->getMessage()));
             throw new \Exception($e->getMessage());
         }
 
@@ -313,6 +308,56 @@ class Youtube
     }
 
     /**
+     * Get videos from a playlist
+     *
+     * @return \Google_Service_YouTube_PlaylistListResponse
+     */
+    public function getVideosFromPlayList()
+    {
+        try {
+            //todo: check if there is no playlist?
+            $playlist = $this->searchForPlayList();
+
+            if (empty($playlist)){
+                throw new \Exception('Sorry, playlist can not be found');
+            }
+
+            $playlistItemsResponse = $this->youtube->playlistItems->listPlaylistItems('snippet', array(
+                'playlistId' => $playlist['id'],
+                //'maxResults' => 50
+            ));
+            return collect($playlistItemsResponse['items'])->map(function ($item) {
+                return [
+                    'id' => $item['id'],
+                    'thumbnail' => $item['snippet']['thumbnails']['default']['url']
+                ];
+            });//->first();
+
+        } catch (Google_Service_Exception $e) {
+            throw new \Exception($e->getMessage());
+        } catch (Google_Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete videos from a playlist
+     *
+     * @return mixed
+     */
+    public function delteVideosFromPlayList($itemId)
+    {
+        try {
+            //todo: check if there is no playlist?
+            $playlist = $this->searchForPlayList();
+
+            return $this->youtube->playlistItems->delete($itemId);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Search playlists by title of the playlist
      *
      * @return mixed
@@ -323,7 +368,7 @@ class Youtube
         $playLists = $this->getPlayLists();
 
         //check if modelData and items key exist
-        if (!array_key_exists('modelData', $playLists) and !array_key_exists('items', $playLists['modelData'])){
+        if (!array_key_exists('modelData', $playLists) and !array_key_exists('items', $playLists['modelData'])) {
             $playlists = $playLists['items'];
         } else {
             $playlists = $playLists['modelData']['items'];
@@ -379,9 +424,9 @@ class Youtube
             $this->client->setDefer(false);
             $this->thumbnailUrl = $status['items'][0]['default']['url'];
         } catch (\Google_Service_Exception $e) {
-            die($e->getMessage());
+            throw new \Exception($e->getMessage());
         } catch (\Google_Exception $e) {
-            die($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
         return $this;
     }
