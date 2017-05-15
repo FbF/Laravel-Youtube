@@ -328,7 +328,7 @@ class Youtube
       ));
 
       return collect($playlistItemsResponse['items'])->map(function ($item) {
-          dd($item['snippet']['resourceId']);
+          dd($item['snippet']['resourceId']['videoId']);
         return [
           'id' => $item['id'],
           'thumbnail' => $item['snippet']['thumbnails']['default']['url'],
