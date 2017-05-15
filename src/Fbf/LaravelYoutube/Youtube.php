@@ -326,8 +326,9 @@ class Youtube
         'playlistId' => $playlist['id'],
         //'maxResults' => 50
       ));
-      dd($playlistItemsResponse);
+
       return collect($playlistItemsResponse['items'])->map(function ($item) {
+          dd($item['snippet']['resourceId']);
         return [
           'id' => $item['id'],
           'thumbnail' => $item['snippet']['thumbnails']['default']['url'],
