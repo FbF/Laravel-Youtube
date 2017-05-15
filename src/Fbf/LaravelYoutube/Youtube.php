@@ -328,11 +328,11 @@ class Youtube
       ));
 
       return collect($playlistItemsResponse['items'])->map(function ($item) {
-          dd($item['snippet']['resourceId']['videoId']);
+          //dd($item['snippet']['resourceId']['videoId']);
         return [
           'id' => $item['id'],
           'thumbnail' => $item['snippet']['thumbnails']['default']['url'],
-          'videoId' => $item['snippet']['resourceId']['videoId'],
+          'videoId' => $item['snippet']['resourceId']['videoId'] ?: '' ,
         ];
       });//->first();
 
