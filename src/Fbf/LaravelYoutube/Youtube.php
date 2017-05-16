@@ -334,7 +334,7 @@ class Youtube
           'thumbnail' => $item['snippet']['thumbnails']['default']['url'],
           'videoId' => $item['snippet']['resourceId']['videoId'] ?: '' ,
         ];
-      });//->first();
+      });
 
     } catch (Google_Service_Exception $e) {
       throw new \Exception($e->getMessage());
