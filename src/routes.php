@@ -27,7 +27,7 @@ Route::group(['prefix' => config('youtube.routes.prefix')], function () {
                 $accessToken = Youtube::authenticate($_GET['code']);
                 Youtube::saveAccessTokenToDB(json_encode($accessToken));
                 //return response()->json(['access_token' => $accessToken], 200);
-                return redirect()->secure('/lesson/lesson-eight/8/106');
+                return redirect()->secure('/lesson/lesson-eight/8/113');
             } catch (Exception $e) {
                 // Do something here
                 dd($e);
