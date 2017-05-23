@@ -24,7 +24,7 @@ Route::group(['prefix' => config('youtube.routes.prefix'), 'middleware' => ['web
                 $accessToken = Youtube::authenticate($_GET['code']);
                 Youtube::saveAccessTokenToDB(json_encode($accessToken));
                 //todo: pun in env or in constants or in config
-                $redirectTo = !empty(config('youtube.routes.redirect_uri')) ? url(config('youtube.routes.redirect_uri')) : route('/');
+                $redirectTo = !empty(config('youtube.routes.internal_redirect_url')) ? url(config('youtube.routes.internal_redirect_url')) : route('/');
                 return redirect()->secure($redirectTo);
             } catch (Exception $e) {
                 dd($e->getMessage());

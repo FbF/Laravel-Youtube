@@ -4,13 +4,13 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Neil Crookes",
-            "email": "neil.crookes@fivebyfiveuk.com"
+            "name": "Muhamed Didovic",
+            "email": "muhamed.didovic@gmail.com"
         }
     ],
     "require": {
-        "php": ">=5.3.0",
-        "illuminate/support": "5.*",
+        "php": ">=5.6.4",
+        "illuminate/support": "5.4",
         "google/apiclient": "dev-master"
     },
     "autoload": {
