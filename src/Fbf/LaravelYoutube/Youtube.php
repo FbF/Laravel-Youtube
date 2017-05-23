@@ -239,8 +239,8 @@ class Youtube
             // channel and adds a video to the playlist.
             // 1. Create the snippet for the playlist. Set its title and description.
             $playlistSnippet = new \Google_Service_YouTube_PlaylistSnippet();
-            $playlistSnippet->setTitle(config(['youtube.playlist.title' => 'FNF Playlist for: ' . $user->username . '-' . $user->id]));
-            $playlistSnippet->setDescription(config(['youtube.playlist.description' => "A private playlist created for {$user->username}"]));
+            $playlistSnippet->setTitle(config('youtube.playlist.title', 'FNF Playlist for: ' . $user->username . '-' . $user->id));
+            $playlistSnippet->setDescription(config('youtube.playlist.description', "A private playlist created for {$user->username}"));
 
             // 2. Define the playlist's status.
             $playlistStatus = new \Google_Service_YouTube_PlaylistStatus();
@@ -251,7 +251,7 @@ class Youtube
             $youTubePlaylist = new \Google_Service_YouTube_Playlist();
             $youTubePlaylist->setSnippet($playlistSnippet);
             $youTubePlaylist->setStatus($playlistStatus);
-            $youTubePlaylist->setKind(config(['youtube.playlist.kind' => 'youtube#' . $user->username]));
+            $youTubePlaylist->setKind(config('youtube.playlist.kind', 'youtube#' . $user->username));
 
 
             // 4. Call the playlists.insert method to create the playlist. The API
@@ -383,7 +383,7 @@ class Youtube
 
         return collect($newPlaylists)->filter(function ($item) use ($user) {
             //FNF Playlist for: student
-            return $item['snippet']['title'] == config(['youtube.playlist.title' => 'FNF Playlist for: ' . $user->username . '-' . $user->id]);
+            return $item['snippet']['title'] == config('youtube.playlist.title', 'FNF Playlist for: ' . $user->username . '-' . $user->id);
         })->first();
     }
 
