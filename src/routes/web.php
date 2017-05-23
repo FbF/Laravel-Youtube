@@ -11,26 +11,24 @@ Route::group(['prefix' => config('youtube.routes.prefix'), 'middleware' => ['web
         if (!Youtube::getLatestAccessTokenFromDB()) {
             return response()->json(['url' => Youtube::createAuthUrl()], 200);
         }
-        //dd(Youtube::createAuthUrl());
-        //return redirect()->to(Youtube::createAuthUrl());
         return response()->json(['message' => 'access_token present in DB'], 200);
     });
     /**
      * Redirect
      */
-    Route::get(config('youtube.routes.redirect_uri'), function (Illuminate\Http\Request $request) {
-        $code = $request->get('code');
-        if (is_null($code)) {
+    Route::get(config('youtube.routes.redirect_uri'), function () {
+        if (is_null($code = request('code'))) {
             throw new Exception('$_GET[\'code\'] is not set.');
         } else {
             try {
                 $accessToken = Youtube::authenticate($_GET['code']);
                 Youtube::saveAccessTokenToDB(json_encode($accessToken));
-                //todo: pun in env or in constants
-                return redirect()->secure('/lesson/lesson-eight/8/113');
+                //todo: pun in env or in constants or in config
+                //'/lesson/lesson-eight/8/113'
+                $redirectTo = !empty(config('youtube.routes.redirect_uri')) ? url(config('youtube.routes.redirect_uri')) : route('/');
+                return redirect()->secure($redirectTo);
             } catch (Exception $e) {
-                // Do something here
-                dd($e);
+                dd($e->getMessage());
             }
 
         }

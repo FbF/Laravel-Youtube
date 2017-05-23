@@ -63,6 +63,23 @@ return [
          * The authentication URI
          */
         'authentication_uri' => 'auth',
+        /**
+         * After we do authentication on Google side and we come back, we need to redirect user somewhere
+         */
+        'internal_redirect_url' => ''
+    ],
+
+    'playlist' => [
+        //todo: add explanations
+        'title' => 'Playlist title',
+        'description' => 'Playlist description',
+        'privacy' => 'unlisted',
+        'kind' => 'youtube#'
+    ],
+
+    'playlist_item' => [
+        'title' => 'Playlist item title',
+        'kind' => 'youtube#video'
     ]
 
 ];

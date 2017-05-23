@@ -5,7 +5,7 @@ interface Youtube
     /**
      * Saves the access token to the database.
      *
-     * @param  string  $accessToken
+     * @param  string $accessToken
      */
     public function saveAccessTokenToDB($accessToken);
 
@@ -59,7 +59,7 @@ interface Youtube
     /**
      * Set a Custom Thumbnail for the Upload
      *
-     * @param  string  $imagePath
+     * @param  string $imagePath
      *
      * @return self
      */
@@ -82,7 +82,7 @@ interface Youtube
     /**
      * Delete a YouTube video by it's ID.
      *
-     * @param  int  $id
+     * @param  int $id
      *
      * @return bool
      */
@@ -91,7 +91,7 @@ interface Youtube
     /**
      * Check if a YouTube video exists by it's ID.
      *
-     * @param  int  $id
+     * @param  int $id
      *
      * @return bool
      */

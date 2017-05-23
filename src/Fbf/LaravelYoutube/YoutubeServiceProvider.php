@@ -27,13 +27,14 @@ class YoutubeServiceProvider extends ServiceProvider
 //        }
 
         $this->publishes([
-                             __DIR__.'/../../config/youtube.php' => config_path('youtube.php'),
-                         ], 'config');
-        $this->publishes([
-                             __DIR__.'/../../migrations/' => database_path('migrations')
-                         ], 'migrations');
+            __DIR__ . '/../../config/youtube.php' => config_path('youtube.php'),
+        ], 'config');
 
-        include __DIR__.'/../../routes/web.php';
+        $this->publishes([
+            __DIR__ . '/../../migrations/' => database_path('migrations')
+        ], 'migrations');
+
+        include __DIR__ . '/../../routes/web.php';
 
     }
 
@@ -71,6 +72,7 @@ class YoutubeServiceProvider extends ServiceProvider
     {
         return Str::startsWith(Application::VERSION, array('4.1.', '4.2.'));
     }
+
     public function isOldLaravel()
     {
         return Str::startsWith(Application::VERSION, '4.0.');
