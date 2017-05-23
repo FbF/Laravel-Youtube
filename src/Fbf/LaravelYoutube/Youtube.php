@@ -239,19 +239,19 @@ class Youtube
             // channel and adds a video to the playlist.
             // 1. Create the snippet for the playlist. Set its title and description.
             $playlistSnippet = new \Google_Service_YouTube_PlaylistSnippet();
-            $playlistSnippet->setTitle(config('youtube.playlist.title'));//'FNF Playlist for: ' . $user->username . '-' . $user->id
-            $playlistSnippet->setDescription(config('youtube.playlist.description'));//"A private playlist created for {$user->username}"
+            $playlistSnippet->setTitle(config('youtube.playlist.title', 'FNF Playlist for: ' . $user->username . '-' . $user->id));
+            $playlistSnippet->setDescription(config('youtube.playlist.description', "A private playlist created for {$user->username}"));
 
             // 2. Define the playlist's status.
             $playlistStatus = new \Google_Service_YouTube_PlaylistStatus();
-            $playlistStatus->setPrivacyStatus(config('youtube.playlist.privacy'));//
+            $playlistStatus->setPrivacyStatus(config('youtube.playlist.privacy'));
 
             // 3. Define a playlist resource and associate the snippet and status
             // defined above with that resource.
             $youTubePlaylist = new \Google_Service_YouTube_Playlist();
             $youTubePlaylist->setSnippet($playlistSnippet);
             $youTubePlaylist->setStatus($playlistStatus);
-            $youTubePlaylist->setKind(config('youtube.playlist.kind'));//'youtube#' . $user->username
+            $youTubePlaylist->setKind(config('youtube.playlist.kind', 'youtube#' . $user->username));
 
 
             // 4. Call the playlists.insert method to create the playlist. The API
@@ -276,7 +276,7 @@ class Youtube
             // video being added. Add the resource ID and the playlist ID retrieved
             // in step 4 to the snippet as well.
             $playlistItemSnippet = new \Google_Service_YouTube_PlaylistItemSnippet();
-            $playlistItemSnippet->setTitle(config('youtube.playlist_item.title'));//'First video in the test playlist'
+            $playlistItemSnippet->setTitle(config('youtube.playlist_item.title'));
             $playlistItemSnippet->setPlaylistId($playlistId);
             $playlistItemSnippet->setResourceId($resourceId);
 
@@ -383,7 +383,7 @@ class Youtube
 
         return collect($newPlaylists)->filter(function ($item) use ($user) {
             //FNF Playlist for: student
-            return $item['snippet']['title'] == config('youtube.playlist.title'); //'FNF Playlist for: ' . $user->username . '-' . $user->id;
+            return $item['snippet']['title'] == config('youtube.playlist.title', 'FNF Playlist for: ' . $user->username . '-' . $user->id);
         })->first();
     }
 

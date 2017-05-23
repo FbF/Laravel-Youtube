@@ -11,8 +11,6 @@ Route::group(['prefix' => config('youtube.routes.prefix')], function () {
         if (!Youtube::getLatestAccessTokenFromDB()) {
             return response()->json(['url' => Youtube::createAuthUrl()], 200);
         }
-        //dd(Youtube::createAuthUrl());
-        //return redirect()->to(Youtube::createAuthUrl());
         return response()->json(['message' => 'access_token present in DB'], 200);
     });
     /**
