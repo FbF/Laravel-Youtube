@@ -3,7 +3,7 @@
 /**
  * Route URI's
  */
-Route::group(['prefix' => config('youtube.routes.prefix')], function () {
+Route::group(['prefix' => config('youtube.routes.prefix'), 'middleware' => ['web']], function () {
     /**
      * Authentication
      */
@@ -16,19 +16,18 @@ Route::group(['prefix' => config('youtube.routes.prefix')], function () {
     /**
      * Redirect
      */
-    Route::get(config('youtube.routes.redirect_uri'), function (Illuminate\Http\Request $request) {
-        $code = $request->get('code');
-        if (is_null($code)) {
+    Route::get(config('youtube.routes.redirect_uri'), function () {
+        if (is_null($code = request('code'))) {
             throw new Exception('$_GET[\'code\'] is not set.');
         } else {
             try {
                 $accessToken = Youtube::authenticate($_GET['code']);
                 Youtube::saveAccessTokenToDB(json_encode($accessToken));
+                //todo: pun in env or in constants or in config
                 $redirectTo = !empty(config('youtube.routes.internal_redirect_url')) ? url(config('youtube.routes.internal_redirect_url')) : route('/');
                 return redirect()->secure($redirectTo);
             } catch (Exception $e) {
-                // Do something here
-                dd($e);
+                dd($e->getMessage());
             }
 
         }
